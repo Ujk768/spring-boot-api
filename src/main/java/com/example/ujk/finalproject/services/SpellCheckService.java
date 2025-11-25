@@ -6,7 +6,7 @@ import java.util.List;
 
 @Service
 public class SpellCheckService {
-
+    // this should be fetched from db
     private static final List<String> WORDS = List.of(
             "apple", "application", "apply", "applet",
             "banana", "band", "bank", "banner",
