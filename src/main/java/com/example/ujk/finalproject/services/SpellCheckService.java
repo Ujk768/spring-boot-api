@@ -32,6 +32,9 @@ public class SpellCheckService {
         return bestMatch;
     }
 
+    public boolean isCorrectlySpelt(String word) {
+        return WORDS.contains(word.toLowerCase());
+    }
     // Simple Levenshtein distance
     private int levenshteinDistance(String a, String b) {
         int[][] dp = new int[a.length() + 1][b.length() + 1];

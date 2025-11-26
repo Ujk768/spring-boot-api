@@ -1,4 +1,5 @@
 package com.example.ujk.finalproject.controllers;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import com.example.ujk.finalproject.services.SpellCheckService;
@@ -14,8 +15,15 @@ public class SpellCheckController {
     private SpellCheckService spellCheckService;
 
     @PostMapping
-    public SpellCheckResponse checkWord(@RequestBody SpellCheckRequest req) {
+    public SpellCheckResponse checkWord( @Valid @RequestBody SpellCheckRequest req) {
         String corrected = spellCheckService.getCorrectedWord(req.getWord());
-        return new SpellCheckResponse(corrected);
+
+        boolean correct = corrected.equalsIgnoreCase(req.getWord());
+
+        SpellCheckResponse res = new SpellCheckResponse(corrected, correct);
+        res.setStatusCode(200);
+        res.setMessage("Success");
+
+        return res;
     }
 }
