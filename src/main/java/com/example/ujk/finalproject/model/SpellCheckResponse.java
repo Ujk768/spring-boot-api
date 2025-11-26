@@ -13,7 +13,10 @@ public class SpellCheckResponse {
     public SpellCheckResponse(String correctedWord, boolean speltCorrectly) {
         this.correctedWord = correctedWord;
         this.speltCorrectly = speltCorrectly;
+        this.statusCode = speltCorrectly ? 200 : 404;
+        this.message = speltCorrectly ? "Correct spelling" : "Incorrect spelling";
     }
+
 
     public String getCorrectedWord() {
         return correctedWord;

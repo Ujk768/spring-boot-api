@@ -10,7 +10,7 @@ public class SpellCheckService {
     private static final List<String> WORDS = List.of(
             "apple", "application", "apply", "applet",
             "banana", "band", "bank", "banner",
-            "cat", "cater", "category", "catch"
+            "cat", "cater", "category", "catch", "python","java","javascript"
     );
 
     public String getCorrectedWord(String input) {

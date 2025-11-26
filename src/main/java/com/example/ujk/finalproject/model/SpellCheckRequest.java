@@ -4,7 +4,7 @@ public class SpellCheckRequest {
 
     @NotBlank(message = "word is required")
     @Pattern(
-            regexp = "^[A-Za-z]+$",
+            regexp = "^[A-Za-z]{1,}$",
             message = "word must contain only letters"
     )
     private String word;
