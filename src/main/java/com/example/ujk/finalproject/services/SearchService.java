@@ -1,28 +1,30 @@
 package com.example.ujk.finalproject.services;
 
 import com.example.ujk.finalproject.model.Course;
-import com.example.ujk.finalproject.repository.CourseRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import jakarta.annotation.PostConstruct;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 public class SearchService {
-
-    @Autowired
-    private CourseRepository courseRepository;
-
     private final List<Course> courses = new ArrayList<>();
     private final Map<String, Set<Integer>> invertedIndex = new ConcurrentHashMap<>();
 
+    public SearchService() {
+        // Mock Data (replace later with DB fetch)
+        Course c1 = new Course(
+                "Python for Data Science, AI & Development",
+                "https://www.coursera.org/learn/python-for-applied-data-science-ai",
+                "IBM",
+                "Beginner",
+                "Course",
+                "web-development",
+                "https://d3njjcbhbojbot.cloudfront.net/api/utilities/v1/imageproxy/https://s3.amazonaws.com/coursera-course-photos/fc/c1b8dfbac740999b6256aca490de43/Python-Image.jpg?auto=format%2C%20compress%2C%20enhance&dpr=1&w=320&h=180&fit=crop&q=50",
+                "10/4/2025 8:09:00 PM"
+        );
 
-    // Load from DB after service creation
-    @PostConstruct
-    public void init() {
-        courses.addAll(courseRepository.findAll());
+        courses.add(c1);
         buildIndex();
     }
 
@@ -31,9 +33,10 @@ public class SearchService {
             Course c = courses.get(i);
 
             String content = (
-                    c.getCourseName() + " " +
+                    c.getTitle() + " " +
                             c.getCategory() + " " +
-                            c.getSubjects()
+                            c.getLevel() + " " +
+                            c.getUniversity()
             ).toLowerCase();
 
             for (String word : content.split("\\W+")) {
@@ -45,9 +48,6 @@ public class SearchService {
     }
 
     public List<Course> search(String keyword) {
-        if (keyword == null || keyword.isEmpty())
-            return Collections.emptyList();
-
         keyword = keyword.toLowerCase();
 
         Set<Integer> indexes = invertedIndex.get(keyword);
