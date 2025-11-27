@@ -1,18 +1,51 @@
 package com.example.ujk.finalproject.services;
 
+import com.example.ujk.finalproject.model.Course;
+import com.example.ujk.finalproject.repository.CourseRepository;
+import jakarta.annotation.PostConstruct;
 import org.springframework.stereotype.Service;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
 public class SpellCheckService {
-    // this should be fetched from db
-    private static final List<String> WORDS = List.of(
-            "apple", "application", "apply", "applet",
-            "banana", "band", "bank", "banner",
-            "cat", "cater", "category", "catch", "python","java","javascript"
-    );
+    private final CourseRepository courseRepository;
 
+    // This will hold all unique tokens extracted from DB
+    private Set<String> vocabulary = new HashSet<>();
+
+    public SpellCheckService(CourseRepository courseRepository) {
+        this.courseRepository = courseRepository;
+    }
+
+    @PostConstruct
+    public void loadVocabulary() {
+        List<Course> allCourses = courseRepository.findAll();
+
+        for (Course course : allCourses) {
+
+            // Combine course fields
+            String data = (course.getCourseName() + " "
+                    + course.getCategory() + " "
+                    + course.getSubjects())
+                    .toLowerCase();
+
+            // Tokenize by non-alphanumeric characters
+            String[] words = data.split("[^a-z0-9]+");
+
+            for (String word : words) {
+                if (word.length() > 1) {          // ignore single letters
+                    vocabulary.add(word);
+                }
+            }
+        }
+
+        System.out.println("SpellCheck vocabulary size: " + vocabulary.size());
+    }
+
+    // Returns closest match from vocabulary
     public String getCorrectedWord(String input) {
         if (input == null || input.isEmpty()) {
             return "";
@@ -21,8 +54,9 @@ public class SpellCheckService {
         String bestMatch = null;
         int minDistance = Integer.MAX_VALUE;
 
-        for (String word : WORDS) {
-            int distance = levenshteinDistance(input.toLowerCase(), word.toLowerCase());
+        for (String word : vocabulary) {
+            int distance = levenshteinDistance(input.toLowerCase(), word);
+
             if (distance < minDistance) {
                 minDistance = distance;
                 bestMatch = word;
@@ -32,9 +66,11 @@ public class SpellCheckService {
         return bestMatch;
     }
 
+    // Check exact match
     public boolean isCorrectlySpelt(String word) {
-        return WORDS.contains(word.toLowerCase());
+        return vocabulary.contains(word.toLowerCase());
     }
+
     // Simple Levenshtein distance
     private int levenshteinDistance(String a, String b) {
         int[][] dp = new int[a.length() + 1][b.length() + 1];
