@@ -1,33 +1,81 @@
-HELP.md
+# ----------------------------------------------------------------------
+# 1. Build Artifacts
+# ----------------------------------------------------------------------
+# Compiled code and build output
 target/
-.mvn/wrapper/maven-wrapper.jar
-!**/src/main/**/target/
-!**/src/test/**/target/
+build/
 
-### STS ###
-.apt_generated
-.classpath
-.factorypath
+# Package files (JARs, WARs)
+*.jar
+*.war
+*.ear
+*.zip
+*.tar.gz
+
+# Log file
+*.log
+
+# Generated folders (e.g., for annotation processing)
+/bin/
+/out/
+
+# ----------------------------------------------------------------------
+# 2. Dependency Management (Maven & Gradle)
+# ----------------------------------------------------------------------
+# Maven
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-
+/src/main/resources/archetype-resources/
+
+# Gradle
+.gradle
 .project
 .settings
-.springBeans
 .sts4-cache
 
-### IntelliJ IDEA ###
-.idea
-*.iws
+# Wrapper files (keep the non-jar wrapper scripts, but ignore the jar)
+!gradle/wrapper/gradle-wrapper.jar
+
+# ----------------------------------------------------------------------
+# 3. IDE Files (Choose based on your IDE)
+# ----------------------------------------------------------------------
+
+# IntelliJ IDEA
+.idea/
 *.iml
+*.iws
 *.ipr
+/out/
 
-### NetBeans ###
-/nbproject/private/
-/nbbuild/
-/dist/
-/nbdist/
-/.nb-gradle/
-build/
-!**/src/main/**/build/
-!**/src/test/**/build/
+# Eclipse
+.classpath
+.project
+.settings/
+bin/
+tmp/
 
-### VS Code ###
+# Visual Studio Code
 .vscode/
+
+# ----------------------------------------------------------------------
+# 4. OS/System Files
+# ----------------------------------------------------------------------
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+Desktop.ini
+
+# ----------------------------------------------------------------------
+# 5. Secrets and Environment Files
+# ----------------------------------------------------------------------
+# NEVER commit files that contain credentials, keys, or passwords!
+# Instead, use environment variables or a secrets manager.
+application*.properties.example
+application*.yml.example
+.env
