@@ -112,6 +112,8 @@ public class Course {
     @Field("Accreditation")
     private String accreditation;
 
+    private int rankScore;
+
     // Getters and setters for all fields
 
 
@@ -393,5 +395,13 @@ public class Course {
 
     public void setAccreditation(String accreditation) {
         this.accreditation = accreditation;
+    }
+
+    public int getRankScore() {
+        return rankScore;
+    }
+
+    public void setRankScore(int rankScore) {
+        this.rankScore = rankScore;
     }
 }
