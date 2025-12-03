@@ -7,8 +7,8 @@ public class AutoCompleteRequest {
 
     @NotBlank(message = "word is required")
     @Pattern(
-            regexp = "^[A-Za-z]{1,}$",
-            message = "word must contain only letters and be at least 1 character long"
+            regexp = "^[A-Za-z0-9\\s\\-:/]+$",
+            message = "word contains invalid characters"
     )
     private String word;
     public String getWord() {

@@ -24,14 +24,14 @@ public class FrequencyCountController {
         String word = request.getWord();
 
         // 1️⃣ Check correctness before updating frequency
-        boolean isCorrect = spellCheckService.isCorrectlySpelt(word);
+        boolean isCorrect = spellCheckService.isCorrectlySpelt(word) | spellCheckService.isOfficialPhrase(word);
 
-        if (!isCorrect) {
-            FrequencyCountResponse resp = new FrequencyCountResponse(word, 0, "Incorrect spelling", 404);
-            return ResponseEntity
-                    .status(400)
-                    .body(resp);
-        }
+//        if (!isCorrect) {
+//            FrequencyCountResponse resp = new FrequencyCountResponse(word, 0, "Incorrect spelling", 404);
+//            return ResponseEntity
+//                    .status(400)
+//                    .body(resp);
+//        }
         int updatedFrequency = service.incrementAndGetFrequency(word);
 
         FrequencyCountResponse success =

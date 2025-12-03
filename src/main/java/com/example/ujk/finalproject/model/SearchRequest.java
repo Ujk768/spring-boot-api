@@ -7,8 +7,8 @@ public class SearchRequest {
 
     @NotBlank(message = "word is required")
     @Pattern(
-            regexp = "^[A-Za-z]{1,}$",
-            message = "word must contain only letters"
+            regexp = "^[A-Za-z0-9\\s\\-:/]+$",
+            message = "Search term contains invalid characters"
     )
     private String search;
 

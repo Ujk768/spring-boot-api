@@ -10,6 +10,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @Service
 public class SearchService {
@@ -19,7 +20,8 @@ public class SearchService {
     private final Map<String, Set<Integer>> invertedIndex = new ConcurrentHashMap<>();
     private static final Pattern RATING_PATTERN = Pattern.compile("^\\s*(\\d+(\\.\\d+)?).*");
 
-    // Load from DB after service creation
+    // init and buildIndex remain unchanged...
+
     @PostConstruct
     public void init() {
         courses.addAll(courseRepository.findAll());
@@ -29,56 +31,99 @@ public class SearchService {
     private void buildIndex() {
         for (int i = 0; i < courses.size(); i++) {
             Course c = courses.get(i);
+            // Null check is important here
+            if (c.getCourseName() == null) continue;
             String courseName = c.getCourseName().toLowerCase();
-            if (courseName == null) continue;
             for (String word : courseName.split("[^a-zA-Z0-9]+")) {
-                invertedIndex.computeIfAbsent(word, k -> new HashSet<>()).add(i);
+                if (!word.isEmpty()) { // Ensure token is not empty
+                    invertedIndex.computeIfAbsent(word, k -> new HashSet<>()).add(i);
+                }
             }
         }
+        System.out.println("Inverted index built with " + invertedIndex.size() + " unique tokens.");
     }
 
     private float parseRating(String rating) {
-        if (rating == null || rating.isEmpty()) {
-            return 0.0f;
-        }
-
+        if (rating == null || rating.isEmpty()) return 0.0f;
         try {
-            // Create a Matcher object
             Matcher matcher = RATING_PATTERN.matcher(rating);
-
-            // Attempt to find a match
             if (matcher.matches()) {
-                // Group 1 captures the entire numeric part (e.g., "4" or "4.5")
                 String numericPart = matcher.group(1);
-
-                // Convert the extracted numeric string to a float
                 return Float.parseFloat(numericPart);
             }
         } catch (NumberFormatException e) {
-            // Log error if the extracted part is somehow not a valid float
             System.err.println("Could not parse numeric part as float: " + rating);
         }
-
-        // Return 0.0f if no numeric part was found or an error occurred
         return 0.0f;
     }
 
+
+    /**
+     * Searches the inverted index for all terms in the keyword phrase and returns
+     * the intersection of the results.
+     */
     public List<Course> search(String keyword) {
         if (keyword == null || keyword.isEmpty()) return Collections.emptyList();
-        keyword = keyword.toLowerCase();
-        Set<Integer> indexes = invertedIndex.get(keyword);
-        if (indexes == null) return Collections.emptyList();
-        List<Course> results = new ArrayList<>();
-        for (Integer index : indexes) {
-            results.add(courses.get(index));
+
+        // 1. Tokenize the input phrase
+        String[] searchTerms = keyword.toLowerCase().split("[^a-zA-Z0-9]+");
+
+        // Use a Set to hold the common indices, initialized with the first word's results
+        Set<Integer> intersectionIndexes = null;
+
+        // 2. Iterate through search terms and intersect results
+        for (String term : searchTerms) {
+            if (term.isEmpty()) continue;
+
+            Set<Integer> termIndexes = invertedIndex.get(term);
+
+            if (termIndexes == null) {
+                // Fallback to substring match: find any courses whose name contains the term
+                termIndexes = new HashSet<>();
+
+                for (int i = 0; i < courses.size(); i++) {
+                    Course c = courses.get(i);
+                    if (c.getCourseName() != null &&
+                            c.getCourseName().toLowerCase().contains(term)) {
+                        termIndexes.add(i);
+                    }
+                }
+
+                // If STILL nothing found → return empty
+                if (termIndexes.isEmpty()) {
+                    return Collections.emptyList();
+                }
+            }
+
+            if (intersectionIndexes == null) {
+                // Initialize the set with the first term's results (e.g., all courses with "backend")
+                intersectionIndexes = new HashSet<>(termIndexes);
+            } else {
+                // Intersect the current results with the new term's results
+                // This keeps only the courses that contain ALL previous terms AND the current term.
+                intersectionIndexes.retainAll(termIndexes);
+
+                // Optimization: If the intersection becomes empty, we can stop early
+                if (intersectionIndexes.isEmpty()) {
+                    return Collections.emptyList();
+                }
+            }
         }
+
+        if (intersectionIndexes == null || intersectionIndexes.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        // 3. Collect results and sort
+        List<Course> results = intersectionIndexes.stream()
+                .map(courses::get)
+                .collect(Collectors.toList());
+
         results.sort(Comparator.comparing(
-                // Use a custom comparator that parses the rating string to a float
                 course -> parseRating(course.getRating()),
-                Comparator.reverseOrder() // Sort from highest rating to lowest
+                Comparator.reverseOrder()
         ));
+
         return results;
     }
 }
-
-
